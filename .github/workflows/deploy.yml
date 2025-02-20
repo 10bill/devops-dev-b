@@ -1,0 +1,33 @@
+name: Deploy on Scaleway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Login to Scaleway Container Registry
+      run: |
+        echo "${{ secrets.SCW_ACCESS_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_NAMESPACE }} --password-stdin
+
+    - name: Build & Push Back
+      run: |
+        docker build -t rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest ./back
+        docker push rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest
+
+    - name: Build & Push Front
+      run: |
+        docker build -t rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest ./front
+        docker push rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest
+
+    - name: Deploy on Scaleway
+      run: |
+        scw container container update ${{ secrets.SCW_BACK_CONTAINER_ID }} image=rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest
+        scw container container update ${{ secrets.SCW_FRONT_CONTAINER_ID }} image=rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest
