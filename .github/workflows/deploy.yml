@@ -21,7 +21,7 @@ jobs:
 
     - name: 🔹 Se connecter à Scaleway CLI
       run: |
-        scw init secret-key=${{ secrets.SCW_SECRET_KEY }} project-id=${{ secrets.SCW_PROJECT_ID }}
+        echo "${{ secrets.SCW_SECRET_KEY }}" | scw init --access-key=${{ secrets.SCW_ACCESS_KEY }} --secret-key-stdin --project-id=${{ secrets.SCW_PROJECT_ID }}
 
     - name: 🔹 Connexion à Scaleway Container Registry
       run: |
