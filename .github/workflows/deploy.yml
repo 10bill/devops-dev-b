@@ -19,13 +19,13 @@ jobs:
         chmod +x scw
         sudo mv scw /usr/local/bin/
 
-    - name: 🔹 Se connecter à Scaleway CLI
+    -     - name: 🔹 Se connecter à Scaleway CLI
       run: |
-        echo "${{ secrets.SCW_SECRET_KEY }}" | scw init --access-key=${{ secrets.SCW_ACCESS_KEY }} --secret-key-stdin --project-id=${{ secrets.SCW_PROJECT_ID }}
+        echo "${{ secrets.BIL_SECRET }}" | scw init --access-key=${{ secrets.SCW_ACCESS_KEY }} --secret-key-stdin --project-id=${{ secrets.SCW_PROJECT_ID }}
 
     - name: 🔹 Connexion à Scaleway Container Registry
       run: |
-        echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u _ --password-stdin
+        echo "${{ secrets.BIL_SECRET }}" | docker login rg.fr-par.scw.cloud -u _ --password-stdin
 
     - name: 🔹 Build & Push Backend
       run: |
