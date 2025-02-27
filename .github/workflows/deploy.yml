@@ -3,31 +3,41 @@ name: Deploy on Scaleway
 on:
   push:
     branches:
-      - main
+      - main  # Déclenchement lors d'un push sur main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: 🔹 Récupérer le code
       uses: actions/checkout@v3
 
-    - name: Login to Scaleway Container Registry
+    - name: 🔹 Installer Scaleway CLI
       run: |
-        echo "${{ secrets.SCW_ACCESS_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_NAMESPACE }} --password-stdin
+        curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli-linux-x86_64 -o scw
+        chmod +x scw
+        sudo mv scw /usr/local/bin/
 
-    - name: Build & Push Back
+    - name: 🔹 Se connecter à Scaleway CLI
       run: |
-        docker build -t rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest ./back
-        docker push rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest
+        scw init secret-key=${{ secrets.SCW_SECRET_KEY }} project-id=${{ secrets.SCW_PROJECT_ID }}
 
-    - name: Build & Push Front
+    - name: 🔹 Connexion à Scaleway Container Registry
       run: |
-        docker build -t rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest ./front
-        docker push rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest
+        echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u _ --password-stdin
 
-    - name: Deploy on Scaleway
+    - name: 🔹 Build & Push Backend
       run: |
-        scw container container update ${{ secrets.SCW_BACK_CONTAINER_ID }} image=rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/back:latest
-        scw container container update ${{ secrets.SCW_FRONT_CONTAINER_ID }} image=rg.fr-par.scw.cloud/${{ secrets.SCW_NAMESPACE }}/front:latest
+        docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./back
+        docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
+
+    - name: 🔹 Build & Push Frontend
+      run: |
+        docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./front
+        docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
+
+    - name: 🔹 Mettre à jour les containers sur Scaleway
+      run: |
+        scw container update ${{ secrets.SCW_BACK_CONTAINER_ID }} image=rg.fr-par.scw.cloud/ns-bilale/back:latest
+        scw container update ${{ secrets.SCW_FRONT_CONTAINER_ID }} image=rg.fr-par.scw.cloud/ns-bilale/front:latest
