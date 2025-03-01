@@ -19,13 +19,13 @@ jobs:
         chmod +x scw
         sudo mv scw /usr/local/bin/
 
-    -     - name: 🔹 Se connecter à Scaleway CLI
+    - name: 🔹 Se connecter à Scaleway CLI
       run: |
-        echo "${{ secrets.BIL_SECRET }}" | scw init --access-key=${{ secrets.SCW_ACCESS_KEY }} --secret-key-stdin --project-id=${{ secrets.SCW_PROJECT_ID }}
+        scw init --access-key=${{ secrets.SCW_ACCESS_KEY }} --secret-key=${{ secrets.SCW_SECRET_KEY }} --project-id=${{ secrets.SCW_PROJECT_ID }}
 
     - name: 🔹 Connexion à Scaleway Container Registry
       run: |
-        echo "${{ secrets.BIL_SECRET }}" | docker login rg.fr-par.scw.cloud -u _ --password-stdin
+        echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u _ --password-stdin
 
     - name: 🔹 Build & Push Backend
       run: |
@@ -37,7 +37,10 @@ jobs:
         docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./front
         docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
 
-    - name: 🔹 Mettre à jour les containers sur Scaleway
+    - name: 🔹 Mettre à jour et déployer les containers sur Scaleway
       run: |
         scw container update ${{ secrets.SCW_BACK_CONTAINER_ID }} image=rg.fr-par.scw.cloud/ns-bilale/back:latest
+        scw container deploy ${{ secrets.SCW_BACK_CONTAINER_ID }}
+        
         scw container update ${{ secrets.SCW_FRONT_CONTAINER_ID }} image=rg.fr-par.scw.cloud/ns-bilale/front:latest
+        scw container deploy ${{ secrets.SCW_FRONT_CONTAINER_ID }}
