@@ -3,7 +3,7 @@ name: Deploy on Scaleway
 on:
   push:
     branches:
-      - main  # Déclenchement lors d'un push sur main
+      - main  # Déclenchement du push
 
 jobs:
   build-and-deploy:
