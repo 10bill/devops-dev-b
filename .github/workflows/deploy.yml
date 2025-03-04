@@ -14,9 +14,10 @@ jobs:
 
       - name: 🔹 Installer Scaleway CLI
         run: |
-          curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli_linux_amd64 -o scw
+          curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli -o scw
           chmod +x scw
           sudo mv scw /usr/local/bin/scw
+
 
       - name: 🔹 Connexion à Scaleway CLI
         run: |
@@ -44,9 +45,9 @@ jobs:
 
       - name: 🔹 Installer Scaleway CLI
         run: |
-          curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli_linux_amd64 -o scw
-          chmod +x scw
-          sudo mv scw /usr/local/bin/scw
+            curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli -o scw
+            chmod +x scw
+            sudo mv scw /usr/local/bin/scw
 
       - name: 🔹 Connexion à Scaleway CLI
         run: |
