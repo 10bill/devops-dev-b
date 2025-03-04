@@ -1,12 +1,11 @@
-import app from './app.js'
-import prisma from './db.js'
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 8080; // Vérifie que PORT est bien défini
 
-prisma.$connect().then(async () => {
-    console.log('Connected to the database')
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
 
-    app.listen(3000, '0.0.0.0', () => {
-        console.log('Server running on port 3000')
-    })
-}).catch((error) => {
-    console.error(error)
-})
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+});

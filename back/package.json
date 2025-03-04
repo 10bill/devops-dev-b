@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --collectCoverage",
-    "start": "node server.js"
+    "start": "node server.js",
+    "generate": "npx prisma generate",
+    "migrate": "npx prisma db push"
   },
   "author": "",
   "license": "ISC",
@@ -24,5 +26,8 @@
     "jest-mock-extended": "^4.0.0-beta1",
     "node-mocks-http": "^1.16.2",
     "prisma": "^5.22.0"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   }
 }
