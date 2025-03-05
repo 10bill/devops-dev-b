@@ -3,43 +3,55 @@ name: Deploy to Scaleway
 on:
   push:
     branches:
-      - main  # Exécute le pipeline à chaque push sur main
+      - main # ou la branche que vous utilisez
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Scaleway CLI
         run: |
-          curl -fsSL https://get.scaleway.com/scw-install.sh | bash
-          scw -v  # Vérifier si Scaleway CLI est bien installé
+          curl -fsSL https://get.scaleway.com/install | bash
+          export PATH=$PATH:/root/.scw/bin
+          scw version
 
       - name: Log in to Scaleway Container Registry
         run: |
-          echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ORG_ID }} --password-stdin
+          export SCW_SECRET_KEY=${{ secrets.SCW_SECRET_KEY }}
+          export SCW_DEFAULT_ORGANIZATION_ID=${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          export SCW_DEFAULT_REGION="fr-par" # ou votre région
+          scw container registry login cr-REGION.scaleway-registry.com
 
       - name: Build and push backend Docker image
         run: |
-          docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
-          docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
+          docker build -t cr-REGION.scaleway-registry.com/NAMESPACE/backend:latest -f backend/Dockerfile .
+          docker push cr-REGION.scaleway-registry.com/NAMESPACE/backend:latest
+        env:
+          REGION: fr-par # ou votre région
+          NAMESPACE: votre-namespace # le namespace de votre registry
 
       - name: Build and push frontend Docker image
         run: |
-          docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
-          docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
+          docker build -t cr-REGION.scaleway-registry.com/NAMESPACE/frontend:latest -f frontend/Dockerfile .
+          docker push cr-REGION.scaleway-registry.com/NAMESPACE/frontend:latest
+        env:
+          REGION: fr-par # ou votre région
+          NAMESPACE: votre-namespace # le namespace de votre registry
+
+      - name: Deploy to Kubernetes Kapsule (exemple)
+        run: |
+          # Ajouter les commandes kubectl pour déployer vos images sur Kapsule
+          # Ex: kubectl apply -f kubernetes/deployment.yaml
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # Si vous utilisez Kapsule
 
       - name: Run Prisma Migrations
         run: |
-          docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
-
-      - name: Deploy backend container
-        run: |
-          scw container container update container-bilale image=rg.fr-par.scw.cloud/ns-bilale/back:latest
-
-      - name: Deploy frontend container
-        run: |
-          scw container container update container-bilale-front image=rg.fr-par.scw.cloud/ns-bilale/front:latest
+          # Ajouter les commandes pour exécuter les migrations Prisma
+          # Ex: docker run cr-REGION.scaleway-registry.com/NAMESPACE/backend:latest npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
