@@ -13,24 +13,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Connexion à Scaleway Container Registry
+      # Connexion à Scaleway Container Registry avec Docker
       - name: Login to Scaleway Container Registry
         run: |
           echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ORG_ID }} --password-stdin
 
-      # 🔥 Build & Push Backend
+      # Build & Push du backend
       - name: Build & Push Backend
         run: |
           docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
           docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
 
-      # 🔥 Build & Push Frontend
+      # Build & Push du frontend
       - name: Build & Push Frontend
         run: |
           docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
           docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
 
-      # 🚀 Exécuter les migrations Prisma
+      # Exécuter les migrations Prisma
       - name: Run Prisma Migrations
         run: |
           docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
