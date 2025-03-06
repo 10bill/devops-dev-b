@@ -24,9 +24,7 @@ jobs:
 
       
 
-      - name: 🔹 Exécuter les migrations Prisma
-        run: |
-          docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
+      
 
       - name: 🔹 Déployer le backend sur Scaleway
         run: |
