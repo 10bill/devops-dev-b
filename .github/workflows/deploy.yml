@@ -1,4 +1,4 @@
-name: Deploy to Scaleway
+name: Deploy to Scaleway (Docker Only)
 
 on:
   push:
@@ -13,47 +13,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Installation de Scaleway CLI
-      - name: Install Scaleway CLI
-        run: |
-          curl -fsSL https://get.scaleway.com/scw-install.sh | bash
-          sudo mv /usr/local/bin/scw /usr/bin/scw
-          scw -v  # Vérifier l'installation
-
-      # Connexion à Scaleway
-      - name: Login to Scaleway
-        run: |
-          scw init secret-key=${{ secrets.SCW_SECRET_KEY }} organization-id=${{ secrets.SCW_ORG_ID }} region=fr-par
-          scw account get
-
-      # Connexion à Scaleway Container Registry
+      # Connexion à Scaleway Container Registry avec Docker
       - name: Login to Scaleway Container Registry
         run: |
           echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ORG_ID }} --password-stdin
 
-      # Build et push backend Docker image
-      - name: Build and push backend Docker image
+      # Build & Push du backend
+      - name: Build & Push Backend
         run: |
           docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
           docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
 
-      # Build et push frontend Docker image
-      - name: Build and push frontend Docker image
+      # Build & Push du frontend
+      - name: Build & Push Frontend
         run: |
           docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
           docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
 
-      # Exécuter les migrations Prisma sur la base de données
+      # Exécuter les migrations Prisma
       - name: Run Prisma Migrations
         run: |
           docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
-
-      # Déployer le backend
-      - name: Deploy backend container
-        run: |
-          scw container container update container-bilale image=rg.fr-par.scw.cloud/ns-bilale/back:latest
-
-      # Déployer le frontend
-      - name: Deploy frontend container
-        run: |
-          scw container container update container-bilale-front image=rg.fr-par.scw.cloud/ns-bilale/front:latest
