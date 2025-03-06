@@ -20,10 +20,7 @@ jobs:
         run: |
           echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ACCESS_KEY }} --password-stdin
 
-      - name: 🔹 Build et push du backend
-        run: |
-          docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
-          docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
+      
 
       - name: 🔹 Build et push du frontend
         run: |
