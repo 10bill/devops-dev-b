@@ -13,18 +13,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      
+      - name: 🔹 Installer Scaleway CLI
+        run: |
+          curl -fsSL https://get.scw.cloud/scw-install.sh | bash
+          scw -v  # Vérifier si Scaleway CLI est bien installé
 
 
       - name: 🔹 Connexion à Scaleway Container Registry
         run: |
           echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ACCESS_KEY }} --password-stdin
 
-      
+      - name: 🔹 Build et push du backend
+        run: |
+          docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
+          docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
 
-      
+      - name: 🔹 Build et push du frontend
+        run: |
+          docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
+          docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
 
-      
+      - name: 🔹 Exécuter les migrations Prisma
+        run: |
+          docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
 
       - name: 🔹 Déployer le backend sur Scaleway
         run: |
