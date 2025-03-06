@@ -22,10 +22,7 @@ jobs:
 
       
 
-      - name: 🔹 Build et push du frontend
-        run: |
-          docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
-          docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
+      
 
       - name: 🔹 Exécuter les migrations Prisma
         run: |
