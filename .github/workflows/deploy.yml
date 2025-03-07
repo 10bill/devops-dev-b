@@ -1,4 +1,4 @@
-name: Deploy Front & Back to Scaleway
+name: Deploy to Scaleway (Docker Only)
 
 on:
   push:
@@ -10,40 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: 🔑 Login to Scaleway Container Registry
+      # Connexion à Scaleway Container Registry avec Docker
+      - name: Login to Scaleway Container Registry
         run: |
-          echo "${{ secrets.SCALEWAY_ACCESS_KEY }}:${{ secrets.SCALEWAY_SECRET_KEY }}" | docker login rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud -u _ --password-stdin
+          echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ORG_ID }} --password-stdin
 
-      # --- BUILD & PUSH BACKEND ---
-      - name: 🏗 Build Backend Docker Image
-        run: docker build -t rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/back:latest ./back
-
-      - name: 🚀 Push Backend Image
-        run: docker push rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/back:latest
-
-      # --- BUILD & PUSH FRONTEND ---
-      - name: 🏗 Build Frontend Docker Image
-        run: docker build -t rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/front:latest ./front
-
-      - name: 🚀 Push Frontend Image
-        run: docker push rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/front:latest
-
-      # --- DÉPLOIEMENT SCW ---
-      - name: 📦 Install Scaleway CLI
-        run: curl -fsSL https://github.com/scaleway/scaleway-cli/releases/latest/download/scaleway-cli_linux_amd64 -o scw && chmod +x scw && sudo mv scw /usr/local/bin/
-
-      - name: 🔑 Configure Scaleway CLI
+      # Build & Push du backend
+      - name: Build & Push Backend
         run: |
-          scw config set access-key=${{ secrets.SCALEWAY_ACCESS_KEY }}
-          scw config set secret-key=${{ secrets.SCALEWAY_SECRET_KEY }}
-          scw config set project-id=${{ secrets.SCALEWAY_PROJECT_ID }}
-          scw config set region=${{ secrets.SCALEWAY_REGION }}
+          docker build -t rg.fr-par.scw.cloud/ns-bilale/back:latest ./backend
+          docker push rg.fr-par.scw.cloud/ns-bilale/back:latest
 
-      - name: 🚀 Deploy Backend
-        run: scw container update ns-bilale-back container-registry-image=rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/back:latest
+      # Build & Push du frontend
+      - name: Build & Push Frontend
+        run: |
+          docker build -t rg.fr-par.scw.cloud/ns-bilale/front:latest ./frontend
+          docker push rg.fr-par.scw.cloud/ns-bilale/front:latest
 
-      - name: 🚀 Deploy Frontend
-        run: scw container update ns-bilale-front container-registry-image=rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud/${{ secrets.SCALEWAY_NAMESPACE }}/front:latest
+      # Exécuter les migrations Prisma
+      - name: Run Prisma Migrations
+        run: |
+          docker run --rm --env DATABASE_URL=${{ secrets.DATABASE_URL }} rg.fr-par.scw.cloud/ns-bilale/back:latest npx prisma migrate deploy
