@@ -1,4 +1,5 @@
-const express = require('express');
+import express from 'express';
+
 const app = express();
 const port = process.env.PORT || 8080; // Vérifie que PORT est bien défini
 
