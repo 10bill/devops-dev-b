@@ -16,7 +16,7 @@ jobs:
       # Connexion à Scaleway Container Registry avec Docker
       - name: Login to Scaleway Container Registry
         run: |
-          echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ORG_ID }} --password-stdin
+          echo "${{ secrets.SCALEWAY_SECRET_KEY }}" | docker login rg.${{ secrets.SCALEWAY_REGION }}.scw.cloud --username _ --password-stdin
 
       # Build & Push du backend
       - name: Build & Push Backend
